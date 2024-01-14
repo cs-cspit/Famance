@@ -15,13 +15,24 @@ nav{
     color: #2c87f0;
 }
 .rightnav{
+    width: 50%;
     color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin: 5px;
 }
 
 .rightnav input{
     width: 100%;
     height: 30px;
+    border-radius: 10px;
+}
+
+.rightnav button{
+    height: 45px;
+    border-radius: 10px;
+    background: #42B72A;
+    color: white;
+    font-size: 1.1rem;
 }
