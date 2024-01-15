@@ -11,7 +11,8 @@ function Navbar () {
             <div className="rightnav">
                 Docs
                 <input placeholder="Search" type="text"></input>
-                <button>Login/Signup</button>
+                <button className="loginbutton">Login</button>
+                <button className="signupbutton">Signup</button>
             </div>
         </nav>
         </>

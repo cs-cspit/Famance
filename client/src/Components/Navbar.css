@@ -15,7 +15,7 @@ nav{
     color: #2c87f0;
 }
 .rightnav{
-    width: 50%;
+    width: 30%;
     color: white;
     display: flex;
     justify-content: space-between;
@@ -24,15 +24,25 @@ nav{
 }
 
 .rightnav input{
-    width: 100%;
+    width: 50%;
     height: 30px;
     border-radius: 10px;
 }
 
-.rightnav button{
+.signupbutton{
     height: 45px;
+    width: 9vh;
     border-radius: 10px;
     background: #42B72A;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.loginbutton{
+    width: 10vh;
+    height: 45px;
+    border-radius: 10px;
+    background: #2c87f0;
     color: white;
     font-size: 1.1rem;
 }
