@@ -1,3 +1,14 @@
 .static {
+    margin-left: 20vh;
+    margin-top: 10px;
     color: white;
+    display: flex;
+    align-items: center;
+    padding-left: 2vh;
+    padding-right: 2vh;
+    justify-content: space-between;
+}
+
+.staticpropic{
+    color: black;
 }
