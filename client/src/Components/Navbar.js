@@ -77,6 +77,8 @@ function Navbar() {
       setIdentifier("");
       setPassword("");
 
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       navigate("/", { state: { id: userName } });
       window.location.reload();
       localStorage.setItem("token", token);
@@ -104,7 +106,7 @@ function Navbar() {
                     <h4>{location.state ? location.state.id : null}</h4>
                   </button>
                   <div className="dropdown-content">
-                    
+                  <button onClick={handleSignout}>Signout</button>
                   </div>
                 </div>
               </>
@@ -115,7 +117,6 @@ function Navbar() {
                 <button className="loginbutton" onClick={openLoginModal}>LogIn</button>
               </div>
             )}
-
 
           {isLoginModalOpen && (
             <div onClick={closeLoginModal} className="modal">
@@ -209,7 +210,7 @@ function Navbar() {
             </div>
           )}
         </div>
-        <button onClick={handleSignout}>Signout</button>
+        
       </nav>
     </>
   );

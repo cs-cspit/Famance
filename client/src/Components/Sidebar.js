@@ -1,12 +1,13 @@
 import "./Sidebar.css";
+import { Link } from "react-router-dom";
 
 function Sidebar() {
   return (
     <>
       <div class="sidebar">
-        <a href="#home">
+        <Link to="/myprofile">
           <i class=""></i> Profile
-        </a>
+        </Link>
         <a href="#services">
           <i class="fa fa-fw fa-wrench"></i> Wallet
         </a>
