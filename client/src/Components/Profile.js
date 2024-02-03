@@ -8,6 +8,9 @@ function Profile() {
   const [user, setUser] = useState({});
   const [cuser, setCuser] = useState({});
   const [fcoinamount, setFcoinamount] = useState(0)
+  const [scyouget, setScyouget] = useState(0)
+
+  
 
   useEffect(() => {
     // Fetch user profile data
@@ -27,14 +30,59 @@ function Profile() {
       .catch((err) => console.log(err));
   }, [id]);
 
-
+console.log(cuser)
   const calculatedBalance = Math.max(0, cuser.balance - fcoinamount)
 
 
-  function onBuy(){
-    
-  }
+  // Update scyouget when fcoinamount changes
+  useEffect(() => {
+    const newScyouget = Math.sqrt(fcoinamount / 0.003);
+    setScyouget(isNaN(newScyouget) ? 0 : newScyouget);
+  }, [fcoinamount]);
 
+  
+
+  function onBuy() {
+    // Make an API call to update the ccm value in the database
+    axios
+      .put(
+        `http://localhost:3001/update-ccm/${user._id}`,
+        { ccm: scyouget, fcoinamount: fcoinamount },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      .then((res) => {
+        // Update the local state or perform any additional logic if needed
+        console.log("ccm and balance updated successfully");
+        // Display a popup or any other UI element indicating transaction success
+        alert("Transaction successful!");
+  
+        // Fetch the updated balance directly from the server
+        axios
+          .get(`http://localhost:3001/myprofile`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => {
+            // Update cuser state with the new balance from MongoDB
+            setCuser({ ...cuser, balance: res.data.user.balance });
+          })
+          .catch((err) => console.log(err));
+  
+        // Reset state values
+        setScyouget(0);
+        setFcoinamount(0);
+      })
+      .catch((error) => {
+        console.error("Error updating ccm and balance:", error);
+      });
+  }
+  
+  
   return (
     <>
       <div className="wholeprofile">
@@ -52,9 +100,9 @@ function Profile() {
         <h2>Buy {user.username} coins</h2>
 
         <input type="text" onChange={(e)=>setFcoinamount(e.target.value)} placeholder="Enter Fcoin amount" />
-        <h3>{user.username} coins you get: </h3>
+        <h3>{user.username} coins you get: {scyouget}</h3>
         <h3>Fcoin balance: {cuser.balance - fcoinamount}</h3>
-        <button disabled={calculatedBalance === 0}>Buy</button>
+        <button onClick={onBuy} disabled={calculatedBalance === 0}>Buy</button>
 
 
         <h2>Withdraw {user.username} coins</h2>

@@ -144,6 +144,48 @@ app.get("/:id", (req, res)=>{
   })
 })
 
+// Update ccm endpoint
+// Update ccm endpoint
+app.put("/update-ccm/:id", async (req, res) => {
+  try {
+    const tokenHeader = req.header("Authorization");
+
+    if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const token = tokenHeader.replace("Bearer ", "");
+
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    // Check if the logged-in user matches the user whose card was clicked
+    if (userId === req.params.id) {
+      return res.status(403).json({ error: "Forbidden: Cannot update own ccm" });
+    }
+
+    const userToUpdate = await UserModel.findById(userId);
+
+    if (!userToUpdate) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Subtract the fcoinamount from the balance
+    userToUpdate.balance -= req.body.fcoinamount;
+
+    // Update the ccm value
+    userToUpdate.ccm += req.body.ccm;
+    
+    await userToUpdate.save();
+
+    res.status(200).json({ message: "ccm and balance updated successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error updating ccm and balance" });
+  }
+});
+
+
 app.listen(3001, () => {
   console.log("server is running on port");
 });
