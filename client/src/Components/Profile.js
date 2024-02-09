@@ -5,12 +5,11 @@ import "./Profile.css";
 
 function Profile() {
   const { id } = useParams();
+  console.log({id})
   const [user, setUser] = useState({});
   const [cuser, setCuser] = useState({});
-  const [fcoinamount, setFcoinamount] = useState(0)
-  const [scyouget, setScyouget] = useState(0)
-
-  
+  const [fcoinamount, setFcoinamount] = useState(0);
+  const [scyouget, setScyouget] = useState(0);
 
   useEffect(() => {
     // Fetch user profile data
@@ -30,80 +29,115 @@ function Profile() {
       .catch((err) => console.log(err));
   }, [id]);
 
-console.log(cuser)
-  const calculatedBalance = Math.max(0, cuser.balance - fcoinamount)
+  let calculatedBalance = Math.max(0, cuser.balance - fcoinamount);
 
+  function socialCoinsYouGet(amount) {
 
-  // Update scyouget when fcoinamount changes
-  useEffect(() => {
-    const newScyouget = Math.sqrt(fcoinamount / 0.003);
-    setScyouget(isNaN(newScyouget) ? 0 : newScyouget);
-  }, [fcoinamount]);
+    if (amount < calculatedBalance) {
+      axios
+      .get(`http://localhost:3001/${id}`)
+      .then((res) => setUser(res.data.user))
+      .catch((err) => console.log(err));
 
-  
+      axios
+      .get("http://localhost:3001/myprofile", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you store the token in localStorage
+        },
+      })
+      .then((res) => setCuser(res.data.user))
+      calculatedBalance = Math.max(0, cuser.balance - fcoinamount);
+      
+      setScyouget(Math.sqrt(amount / 0.003));
+    }
+  }
 
   function onBuy() {
-    // Make an API call to update the ccm value in the database
     axios
-      .put(
-        `http://localhost:3001/update-ccm/${user._id}`,
-        { ccm: scyouget, fcoinamount: fcoinamount },
+      .get(`http://localhost:3001/${id}`)
+      .then((res) => setUser(res.data.user))
+      .catch((err) => console.log(err));
+  
+    // Fetch logged-in user profile data including balance
+    axios
+      .get("http://localhost:3001/myprofile", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setCuser(res.data.user);
+        // Update fcoinamount and scyouget
+        setFcoinamount(0);
+        setScyouget(0);
+      })
+      .catch((err) => console.log(err));
+  
+    axios
+      .post(
+        "http://localhost:3001/buy-coins",
+        { fcoinamount, scyouget, cuserId: cuser.id, userId: id }, // Send the fcoinamount, scyouget, and userId to the backend
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
       )
-      .then((res) => {
-        // Update the local state or perform any additional logic if needed
-        console.log("ccm and balance updated successfully");
-        // Display a popup or any other UI element indicating transaction success
-        alert("Transaction successful!");
-  
-        // Fetch the updated balance directly from the server
+      .then(() => {
+        // Update the user and cuser state after successfully buying coins
         axios
-          .get(`http://localhost:3001/myprofile`, {
+          .get(`http://localhost:3001/${id}`)
+          .then((res) => setUser(res.data.user))
+          .catch((err) => console.log(err));
+  
+        axios
+          .get("http://localhost:3001/myprofile", {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           })
-          .then((res) => {
-            // Update cuser state with the new balance from MongoDB
-            setCuser({ ...cuser, balance: res.data.user.balance });
-          })
+          .then((res) => setCuser(res.data.user))
           .catch((err) => console.log(err));
-  
-        // Reset state values
-        setScyouget(0);
-        setFcoinamount(0);
       })
-      .catch((error) => {
-        console.error("Error updating ccm and balance:", error);
-      });
+      .catch((err) => console.log(err));
   }
   
-  
+
   return (
     <>
       <div className="wholeprofile">
         <h3>Profile page</h3>
         <img src={`http://localhost:3001/${user.imageURL}`} alt="Profile pic" />
-        <h3>{user.username}</h3>
-        <h3>{user.firstname} {user.lastname}</h3>
-        <h3>{user.bio}</h3>
-        <h3>{user.balance}</h3>
-        <h3>{user.cfi}</h3>
-        <h3>{user.ccm}</h3>
-        <h3>{(((user.ccm+1)*(user.ccm+1)) * 0.003) - user.cfi}</h3>
-
+        <h3>Username: {user.username}</h3>
+        <h3>
+          Name: {user.firstname} {user.lastname}
+        </h3>
+        <h3>Bio: {user.bio}</h3>
+        <h3>Balance: {user.balance}</h3>
+        <h3>CFI: {user.cfi}</h3>
+        <h3>CCM: {user.ccm}</h3>
+        <h3>
+          Current price: {(((user.ccm + 1) * (user.ccm + 1)) * 0.003 - (user.ccm * user.ccm)*0.003).toFixed(2)}
+        </h3>
 
         <h2>Buy {user.username} coins</h2>
 
-        <input type="text" onChange={(e)=>setFcoinamount(e.target.value)} placeholder="Enter Fcoin amount" />
-        <h3>{user.username} coins you get: {scyouget}</h3>
-        <h3>Fcoin balance: {cuser.balance - fcoinamount}</h3>
-        <button onClick={onBuy} disabled={calculatedBalance === 0}>Buy</button>
-
+        <input
+          type="number"
+          onChange={(e) => {
+            const amount = e.target.value;
+            setFcoinamount(amount);
+            socialCoinsYouGet(amount);
+          }}
+          placeholder="Enter Fcoin amount"
+        />
+        <h3>
+          {user.username} coins you get ≈ {scyouget}
+        </h3>
+        <h3>Fcoin balance ≈ {cuser.balance - fcoinamount}</h3>
+        <button onClick={onBuy} disabled={calculatedBalance === 0}>
+          Buy
+        </button>
 
         <h2>Withdraw {user.username} coins</h2>
         <h3>Fcoins you get: </h3>

@@ -131,7 +131,6 @@ app.get("/allusers", (req, res)=>{
 
 // Getting info of only one specific person
 app.get("/:id", (req, res)=>{
-  console.log(req.params.id)
   UserModel.findById(req.params.id)
   .then(result => {
     res.status(200).json({
@@ -146,44 +145,33 @@ app.get("/:id", (req, res)=>{
 
 // Update ccm endpoint
 // Update ccm endpoint
-app.put("/update-ccm/:id", async (req, res) => {
+app.post("/buy-coins", async (req, res) => {
   try {
-    const tokenHeader = req.header("Authorization");
+    const { fcoinamount, scyouget, cuserId, userId } = req.body;
 
-    if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ error: "Unauthorized" });
-    }
-
-    const token = tokenHeader.replace("Bearer ", "");
-
-    const decoded = jwt.verify(token, SECRET_KEY);
-    const userId = decoded.userId;
-
-    // Check if the logged-in user matches the user whose card was clicked
-    if (userId === req.params.id) {
-      return res.status(403).json({ error: "Forbidden: Cannot update own ccm" });
-    }
-
-    const userToUpdate = await UserModel.findById(userId);
-
-    if (!userToUpdate) {
-      return res.status(404).json({ error: "User not found" });
-    }
-
-    // Subtract the fcoinamount from the balance
-    userToUpdate.balance -= req.body.fcoinamount;
-
-    // Update the ccm value
-    userToUpdate.ccm += req.body.ccm;
     
-    await userToUpdate.save();
+    console.log(userId)
+    // Update balance of the currently logged-in user
+    await UserModel.findByIdAndUpdate(
+      cuserId,
+      { $inc: { balance: -fcoinamount } },
+      { new: true }
+    );
 
-    res.status(200).json({ message: "ccm and balance updated successfully" });
+    // Update cfi and ccm of the user whose profile is currently open
+    await UserModel.findByIdAndUpdate(
+      userId,
+      { $inc: { cfi: fcoinamount, ccm: scyouget } },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Coins purchased successfully" });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Error updating ccm and balance" });
+    res.status(500).json({ error: "Error purchasing coins" });
   }
 });
+
 
 
 app.listen(3001, () => {
