@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const UserModel = require("./models/User");
+const BuyModel = require("./models/Buy")
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -146,12 +147,11 @@ app.get("/:id", (req, res)=>{
 // Update CCM endpoint
 // Update CFI endpoint
 // Update Balance endpoint
-app.post("/buy-coins", async (req, res) => {
+app.post("/buy", async (req, res) => {
   try {
-    const { fcoinamount, scyouget, cuserId, userId } = req.body;
+    const { fcoinamount, scyouget, cuserId, userId, cusername, username } = req.body;
 
     
-    console.log(userId)
     // Update balance of the currently logged-in user
     await UserModel.findByIdAndUpdate(
       cuserId,
@@ -165,6 +165,16 @@ app.post("/buy-coins", async (req, res) => {
       { $inc: { cfi: fcoinamount, ccm: scyouget } },
       { new: true }
     );
+
+    try{
+      const newBuy = new BuyModel({amountboughtinfcoins: fcoinamount, amountboughtinsc: scyouget, usernameofbuyer: cusername, usernameofsc: username})
+
+      await newBuy.save()
+    }catch(e){
+      console.log(e)
+    }
+
+    
 
     res.status(200).json({ message: "Coins purchased successfully" });
   } catch (error) {

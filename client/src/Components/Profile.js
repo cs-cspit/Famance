@@ -5,7 +5,6 @@ import "./Profile.css";
 
 function Profile() {
   const { id } = useParams();
-  console.log({ id });
   const [user, setUser] = useState({});
   const [cuser, setCuser] = useState({});
   const [fcoinamount, setFcoinamount] = useState(0);
@@ -29,7 +28,7 @@ function Profile() {
       .then((res) => setCuser(res.data.user))
       .catch((err) => console.log(err));
   }, [id]);
-
+  
   let calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
   function socialCoinsYouGet(famount) {
@@ -48,7 +47,7 @@ function Profile() {
         .then((res) => setCuser(res.data.user));
       calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
-      setScyouget(Math.sqrt(famount / 0.003));
+      setScyouget((Math.sqrt((user.cfi + famount / 0.003))-user.ccm).toFixed(2));
     }
   }
 
@@ -81,8 +80,8 @@ function Profile() {
 
     axios
       .post(
-        "http://localhost:3001/buy-coins",
-        { fcoinamount, scyouget, cuserId: cuser.id, userId: id }, // Send the fcoinamount, scyouget, and userId to the backend
+        "http://localhost:3001/buy",
+        { fcoinamount, scyouget, cuserId: cuser.id, userId: id, cusername: cuser.username, username: user.username }, // Send the fcoinamount, scyouget, and userId to the backend
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
