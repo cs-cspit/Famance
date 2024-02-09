@@ -143,8 +143,9 @@ app.get("/:id", (req, res)=>{
   })
 })
 
-// Update ccm endpoint
-// Update ccm endpoint
+// Update CCM endpoint
+// Update CFI endpoint
+// Update Balance endpoint
 app.post("/buy-coins", async (req, res) => {
   try {
     const { fcoinamount, scyouget, cuserId, userId } = req.body;
