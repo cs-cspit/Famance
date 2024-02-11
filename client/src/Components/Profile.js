@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
+import Navbar from "./Navbar";
 import "./Profile.css";
 
 function Profile() {
@@ -63,8 +64,8 @@ function Profile() {
 
   // While buying onchange of input
   function socialCoinsYouGet(famount) {
-    console.log("Printing famount", famount)
-    console.log("Prinint calculatedFcoinBalance", calculatedFcoinBalance)
+    console.log("Printing famount", famount);
+    console.log("Prinint calculatedFcoinBalance", calculatedFcoinBalance);
     if (famount <= calculatedFcoinBalance) {
       axios
         .get(`http://localhost:3001/${id}`)
@@ -87,7 +88,9 @@ function Profile() {
     }
   }
 
-  let calculatedScoinBalance = Math.max(0, totalAmountBoughtInSC - totalAmountSoldInSC) + parseFloat(scoinamount);
+  let calculatedScoinBalance =
+    Math.max(0, totalAmountBoughtInSC - totalAmountSoldInSC) +
+    parseFloat(scoinamount);
 
   // While selling the calculations are done here for updating balance of scoins
   function fcoinsYouGet(samount) {
@@ -113,7 +116,7 @@ function Profile() {
 
       calculatedScoinBalance = Math.max(
         0,
-        (totalAmountBoughtInSC - totalAmountSoldInSC) - scoinamount
+        totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount
       );
       let x = user.ccm * user.ccm * 0.003;
       console.log("Printing X", x);
@@ -287,60 +290,88 @@ function Profile() {
 
   return (
     <>
+      <Navbar />
       <div className="wholeprofile">
-        <h3>Profile page</h3>
-        <img src={`http://localhost:3001/${user.imageURL}`} alt="Profile pic" />
-        <h3>Username: {user.username}</h3>
-        <h3>
-          Name: {user.firstname} {user.lastname}
-        </h3>
-        <h3>Bio: {user.bio}</h3>
-        <h3>Balance: {user.balance}</h3>
-        <h3>CFI: {user.cfi}</h3>
-        <h3>CCM: {user.ccm}</h3>
-        <h3>
-          Current price:{" "}
-          {(
-            (user.ccm + 1) * (user.ccm + 1) * 0.003 -
-            user.ccm * user.ccm * 0.003
-          ).toFixed(2)}
-        </h3>
-
-        {/* Buy/Deposit */}
-        <h2>Buy {user.username} coins</h2>
-        <input
-          type="number"
-          onChange={(e) => {
-            const famount = e.target.value;
-            setFcoinamount(famount);
-            socialCoinsYouGet(famount);
-          }}
-          placeholder="Enter Fcoin amount"
+        <img
+          className="profilepic"
+          src={`http://localhost:3001/${user.imageURL}`}
+          alt="Profile pic"
         />
-        <h3>
-          {user.username} coins you get ≈ {scyouget}
-        </h3>
-        <h3>Fcoin balance ≈ {cuser.balance - fcoinamount}</h3>
-        <button onClick={onBuy} disabled={calculatedFcoinBalance === 0}>
-          Buy
-        </button>
 
-        {/* Sell/Withdraw */}
-        <h2>Withdraw {user.username} coins</h2>
-        <input
-          type="text"
-          onChange={(e) => {
-            const samount = e.target.value;
-            setScoinamount(samount);
-            fcoinsYouGet(samount);
-          }}
-        />
-        <h3>Fcoins you get ≈ {fcyouget}</h3>
-        <h3>
-          {user.username} coins you have{" "}
-          {totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount}
-        </h3>
-        <button onClick={onSell}>Sell</button>
+        <div className="info">
+          <h3 className="fullname">
+            {user.firstname} {user.lastname}
+          </h3>
+          <h3 className="username">${user.username}</h3>
+          <h3 className="bio">{user.bio}</h3>
+        </div>
+
+        <div className="ccmcfiprice">
+          <div className="ccm">
+            <h3>Coins in circulation</h3>
+            <h3>{user.ccm}</h3>
+          </div>
+          <div className="cfi">
+            <h3>Market Cap</h3>
+            <h3>{user.cfi}</h3>
+          </div>
+          <div className="price">
+            <h3>Current Price</h3>
+            <h3>
+              {" "}
+              {(
+                (user.ccm + 1) * (user.ccm + 1) * 0.003 -
+                user.ccm * user.ccm * 0.003
+              ).toFixed(2)}
+            </h3>
+          </div>
+        </div>
+
+        <div className="graphbuysell">
+          <div className="graph"></div>
+
+          <div className="dual">
+            {/* Buy/Deposit */}
+            <div className="buybox">
+              <h2>Buy {user.username} coins</h2>
+              <input
+                type="number"
+                onChange={(e) => {
+                  const famount = e.target.value;
+                  setFcoinamount(famount);
+                  socialCoinsYouGet(famount);
+                }}
+                placeholder="Enter Fcoin amount"
+              />
+              <h3>
+                {user.username} coins you get ≈ {scyouget}
+              </h3>
+              <h3>Fcoin balance ≈ {cuser.balance - fcoinamount}</h3>
+              <button onClick={onBuy} disabled={calculatedFcoinBalance === 0}>
+                Buy
+              </button>
+            </div>
+
+            {/* Sell/Withdraw */}
+            <div className="sellbox">
+              <h2>Withdraw {user.username} coins</h2>
+              <input
+                type="number"
+                onChange={(e) => {
+                  const samount = e.target.value;
+                  setScoinamount(samount);
+                  fcoinsYouGet(samount);
+                }}
+              />
+              <h3>Fcoins you get ≈ {fcyouget}</h3>
+              <h3>
+                {user.username} coins you have{" "}
+                {totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount}
+              </h3>
+              <button onClick={onSell}>Sell</button>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

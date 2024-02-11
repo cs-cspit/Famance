@@ -1,3 +1,102 @@
 .wholeprofile{
     color: white;
 }
+
+.profilepic {
+    width: 5em;
+    height: 5em;
+    border-radius: 100%;
+}
+
+.fullname{
+    padding: 5px;
+}
+
+.username{
+    padding: 5px;
+}
+
+.bio{
+    padding: 5px;
+}
+
+.info{
+    width: 500px;
+}
+
+.ccmcfiprice{
+    width: 800px;
+    background: #212121;
+    border-radius: 15px;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    margin: 5px;
+}
+
+.ccmcfiprice h2{
+    margin: 0;
+}
+
+.graphbuysell{
+    margin: 5px;
+    display: flex;
+}
+
+.graph{
+    width: 500px;
+    height: 300px;
+    background: #212121;
+    border-radius: 15px;
+    
+}
+
+.dual {
+    margin-left: 10px;
+
+}
+
+.buybox{
+    background: #212121;
+    width: 300px;
+    height: 200px;
+    padding: 5px;
+    border-radius: 15px;
+    
+}
+
+.buybox h2{
+    margin: 0;
+}
+
+
+
+.buybox input{
+    display: block;
+    width: 95%;
+    height: 30px;
+    border-radius: 15px;
+    margin: auto;
+}
+
+.buybox button {
+    display: block;
+    margin: auto;
+    width: 90%;
+    height: 40px;
+    background-image: linear-gradient(to bottom right, #20BF55, #01BAEF);
+    color: white;
+    border-radius: 15px;
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.sellbox h2{
+    margin: 0;
+}
+
+.sellbox input{
+    width: 80%;
+    height: 30px;
+    border-radius: 15px;
+}
