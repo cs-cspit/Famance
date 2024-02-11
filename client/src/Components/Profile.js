@@ -8,8 +8,14 @@ function Profile() {
   const [user, setUser] = useState({});
   const [cuser, setCuser] = useState({});
   const [fcoinamount, setFcoinamount] = useState(0);
-  const [scoinamount, setScoinamount] = useState(0)
+  const [scoinamount, setScoinamount] = useState(0);
   const [scyouget, setScyouget] = useState(0);
+  const [fcyouget, setFcyouget] = useState(0);
+  const [specificBuys, setSpecificBuys] = useState([]);
+  const [totalAmountBoughtInSC, setTotalAmountBoughtInSC] = useState(0);
+  const [specificSells, setSpecificSells] = useState([]);
+  const [totalAmountSoldInSC, setTotalAmountSoldInSC] = useState(0);
+  // const [calculatedScoinBalance, setCalculatedScoinBalance] = useState(0)
 
   useEffect(() => {
     // Fetch user profile data
@@ -27,12 +33,39 @@ function Profile() {
       })
       .then((res) => setCuser(res.data.user))
       .catch((err) => console.log(err));
+
+    // Fetch Specificbuys of the user whose profile is currently open
+    axios
+      .get(`http://localhost:3001/fetchspecificbuys/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setSpecificBuys(res.data.specificBuys);
+        setTotalAmountBoughtInSC(res.data.totalAmountBoughtInSC);
+      });
+
+    // Fetch Specificsells of the user whose profile is currently open
+    axios
+      .get(`http://localhost:3001/fetchspecificsells/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setSpecificSells(res.data.specificSells);
+        setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
+      });
   }, [id]);
-  
+
   let calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
+  // While buying onchange of input
   function socialCoinsYouGet(famount) {
-    if (famount < calculatedFcoinBalance) {
+    console.log("Printing famount", famount)
+    console.log("Prinint calculatedFcoinBalance", calculatedFcoinBalance)
+    if (famount <= calculatedFcoinBalance) {
       axios
         .get(`http://localhost:3001/${id}`)
         .then((res) => setUser(res.data.user))
@@ -47,14 +80,49 @@ function Profile() {
         .then((res) => setCuser(res.data.user));
       calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
-      setScyouget((Math.sqrt((user.cfi + famount / 0.003))-user.ccm).toFixed(2));
+      let x = parseFloat(famount) + parseFloat(user.cfi);
+      let y = x / 0.003;
+
+      setScyouget((Math.sqrt(y) - parseFloat(user.ccm)).toFixed(2));
     }
   }
 
-  let calculatedScoinBalance = Math.max(0, cuser)
+  let calculatedScoinBalance = Math.max(0, totalAmountBoughtInSC - totalAmountSoldInSC) + parseFloat(scoinamount);
+
   // While selling the calculations are done here for updating balance of scoins
-  function fCoinsYouGet(samount) {
-    
+  function fcoinsYouGet(samount) {
+    console.log("Printing samount", samount);
+    console.log("Printing calculatedScoinBalance", calculatedScoinBalance);
+    if (samount <= calculatedScoinBalance) {
+      console.log("totalAmountBoughtInSC", totalAmountBoughtInSC);
+      console.log("totalAmountSoldInSC", totalAmountSoldInSC);
+
+      console.log("calculatedScoinBalance", calculatedScoinBalance);
+      axios
+        .get(`http://localhost:3001/${id}`)
+        .then((res) => setUser(res.data.user))
+        .catch((err) => console.log(err));
+
+      axios
+        .get("http://localhost:3001/myprofile", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`, // Assuming you store the token in localStorage
+          },
+        })
+        .then((res) => setCuser(res.data.user));
+
+      calculatedScoinBalance = Math.max(
+        0,
+        (totalAmountBoughtInSC - totalAmountSoldInSC) - scoinamount
+      );
+      let x = user.ccm * user.ccm * 0.003;
+      console.log("Printing X", x);
+      let y = (user.ccm - samount) * (user.ccm - samount) * 0.003;
+      console.log("Printing Y", y);
+      let z = x - y;
+      console.log("Printing z", z);
+      setFcyouget(z.toFixed(2));
+    }
   }
 
   function onBuy() {
@@ -81,7 +149,14 @@ function Profile() {
     axios
       .post(
         "http://localhost:3001/buy",
-        { fcoinamount, scyouget, cuserId: cuser.id, userId: id, cusername: cuser.username, username: user.username }, // Send the fcoinamount, scyouget, and userId to the backend
+        {
+          fcoinamount,
+          scyouget,
+          cuserId: cuser.id,
+          userId: id,
+          cusername: cuser.username,
+          username: user.username,
+        }, // Send the fcoinamount, scyouget, and userId to the backend
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -103,6 +178,109 @@ function Profile() {
           })
           .then((res) => setCuser(res.data.user))
           .catch((err) => console.log(err));
+
+        axios
+          .get(`http://localhost:3001/fetchspecificbuys/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => {
+            setSpecificBuys(res.data.specificBuys);
+            setTotalAmountBoughtInSC(res.data.totalAmountBoughtInSC);
+          });
+
+        // Fetch Specificsells of the user whose profile is currently open
+        axios
+          .get(`http://localhost:3001/fetchspecificsells/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => {
+            setSpecificSells(res.data.specificSells);
+            setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
+          });
+      })
+      .catch((err) => console.log(err));
+  }
+
+  function onSell() {
+    axios
+      .get(`http://localhost:3001/${id}`)
+      .then((res) => setUser(res.data.user))
+      .catch((err) => console.log(err));
+
+    // Fetch logged-in user profile data including balance
+    axios
+      .get("http://localhost:3001/myprofile", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setCuser(res.data.user);
+        // Update scoinamount and fcyouget
+        setScoinamount(0);
+        setFcyouget(0);
+      })
+      .catch((err) => console.log(err));
+
+    axios
+      .post(
+        "http://localhost:3001/sell",
+        {
+          scoinamount,
+          fcyouget,
+          cuserId: cuser.id,
+          userId: id,
+          cusername: cuser.username,
+          username: user.username,
+        }, // Send the scoinamount, fcyouget, and userId to the backend
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      .then(() => {
+        // Update the user and cuser state after successfully buying coins
+        axios
+          .get(`http://localhost:3001/${id}`)
+          .then((res) => setUser(res.data.user))
+          .catch((err) => console.log(err));
+
+        axios
+          .get("http://localhost:3001/myprofile", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => setCuser(res.data.user))
+          .catch((err) => console.log(err));
+
+        axios
+          .get(`http://localhost:3001/fetchspecificbuys/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => {
+            setSpecificBuys(res.data.specificBuys);
+            setTotalAmountBoughtInSC(res.data.totalAmountBoughtInSC);
+          });
+
+        // Fetch Specificsells of the user whose profile is currently open
+        axios
+          .get(`http://localhost:3001/fetchspecificsells/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((res) => {
+            setSpecificSells(res.data.specificSells);
+            setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
+          });
       })
       .catch((err) => console.log(err));
   }
@@ -128,8 +306,8 @@ function Profile() {
           ).toFixed(2)}
         </h3>
 
+        {/* Buy/Deposit */}
         <h2>Buy {user.username} coins</h2>
-
         <input
           type="number"
           onChange={(e) => {
@@ -147,18 +325,22 @@ function Profile() {
           Buy
         </button>
 
+        {/* Sell/Withdraw */}
         <h2>Withdraw {user.username} coins</h2>
         <input
-          type="number"
+          type="text"
           onChange={(e) => {
             const samount = e.target.value;
-            setScoinamount(samount)
-            
-
+            setScoinamount(samount);
+            fcoinsYouGet(samount);
           }}
         />
-        <h3>Fcoins you get: </h3>
-        <h3>{user.username} coins you own</h3>
+        <h3>Fcoins you get ≈ {fcyouget}</h3>
+        <h3>
+          {user.username} coins you have{" "}
+          {totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount}
+        </h3>
+        <button onClick={onSell}>Sell</button>
       </div>
     </>
   );

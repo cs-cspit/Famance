@@ -1,7 +1,7 @@
 const mongoose = require("mongoose")
 
-const BuySchema = mongoose.Schema({
-    amoungboughtinfcoins: {type: Number},
+const BuySchema = new mongoose.Schema({
+    amountboughtinfcoins: {type: Number},
     amountboughtinsc: {type: Number},
     timestamp: {type: Date, default: Date.now},
     usernameofbuyer: {type: String},
