@@ -59,10 +59,11 @@
 .buybox{
     background: #212121;
     width: 300px;
-    height: 200px;
+    height: 180px;
     padding: 5px;
     border-radius: 15px;
-    
+    position: relative;
+    margin: 5px;
 }
 
 .buybox h2{
@@ -77,6 +78,7 @@
     height: 30px;
     border-radius: 15px;
     margin: auto;
+    font-size: 1.1rem;
 }
 
 .buybox button {
@@ -89,14 +91,50 @@
     border-radius: 15px;
     font-size: 1.3rem;
     font-weight: bold;
+    position: absolute; /* Added */
+    bottom: 10px; /* Added */
+    left: 50%; /* Added */
+    transform: translateX(-50%); /* Added */
+}
+
+.sellbox{
+    background: #212121;
+    width: 300px;
+    height: 180px;
+    padding: 5px;
+    border-radius: 15px;
+    position: relative;
+    margin: 5px;
 }
 
 .sellbox h2{
     margin: 0;
 }
 
+
+
 .sellbox input{
-    width: 80%;
+    display: block;
+    width: 95%;
     height: 30px;
     border-radius: 15px;
+    margin: auto;
+    font-size: 1.1rem;
 }
+
+.sellbox button {
+    display: block;
+    margin: auto;
+    width: 90%;
+    height: 40px;
+    background-image: linear-gradient(to bottom right, #F61818, #9E00FF);
+    color: white;
+    border-radius: 15px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    position: absolute; /* Added */
+    bottom: 10px; /* Added */
+    left: 50%; /* Added */
+    transform: translateX(-50%); /* Added */
+}
+

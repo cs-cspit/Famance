@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./Navbar";
+import Chart from "chart.js/auto";
+
 import "./Profile.css";
 
 function Profile() {
@@ -16,7 +18,9 @@ function Profile() {
   const [totalAmountBoughtInSC, setTotalAmountBoughtInSC] = useState(0);
   const [specificSells, setSpecificSells] = useState([]);
   const [totalAmountSoldInSC, setTotalAmountSoldInSC] = useState(0);
-  // const [calculatedScoinBalance, setCalculatedScoinBalance] = useState(0)
+  const [graphData, setGraphData] = useState([]);
+
+  console.log("Printing username", user.username);
 
   useEffect(() => {
     // Fetch user profile data
@@ -48,17 +52,62 @@ function Profile() {
       });
 
     // Fetch Specificsells of the user whose profile is currently open
+    // Fetch graph data from backend
     axios
-      .get(`http://localhost:3001/fetchspecificsells/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+      .get(`http://localhost:3001/graphdata/${user.username}`)
       .then((res) => {
-        setSpecificSells(res.data.specificSells);
-        setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
-      });
-  }, [id]);
+        setGraphData(res.data);
+        // Call the function to draw the chart after fetching data
+        drawChart();
+      })
+      .catch((err) => console.log(err));
+  }, [id, user.username]);
+
+  console.log(graphData);
+
+  // Function to draw the chart
+  // Function to draw the chart
+  const drawChart = () => {
+    const ctx = document.getElementById("myChart");
+    new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: graphData.map((data) => data.timestamp), // Use timestamp as labels
+        datasets: [
+          {
+            label: "Price",
+            data: graphData.map((data) => data.price),
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        scales: {
+          x: {
+            type: "linear", // Use linear scale for timestamp
+            ticks: {
+              callback: function (value, index, values) {
+                return new Date(value).toLocaleString(); // Convert timestamp to human-readable format
+              },
+            },
+            title: {
+              display: true,
+              text: "Timestamp",
+            },
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: "Price",
+            },
+          },
+        },
+      },
+    });
+  };
 
   let calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
@@ -328,7 +377,11 @@ function Profile() {
         </div>
 
         <div className="graphbuysell">
-          <div className="graph"></div>
+          <div className="graph">
+            <div>
+              <canvas id="myChart"></canvas>{" "}
+            </div>
+          </div>
 
           <div className="dual">
             {/* Buy/Deposit */}
@@ -362,11 +415,16 @@ function Profile() {
                   setScoinamount(samount);
                   fcoinsYouGet(samount);
                 }}
+                placeholder={`Enter ${user.username} to sell`}
               />
               <h3>Fcoins you get ≈ {fcyouget}</h3>
               <h3>
-                {user.username} coins you have{" "}
-                {totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount}
+                {user.username} coins you have ≈{" "}
+                {(
+                  totalAmountBoughtInSC -
+                  totalAmountSoldInSC -
+                  scoinamount
+                ).toFixed(2)}
               </h3>
               <button onClick={onSell}>Sell</button>
             </div>

@@ -4,6 +4,7 @@ const cors = require("cors");
 const UserModel = require("./models/User");
 const BuyModel = require("./models/Buy");
 const SellModel = require("./models/Sell");
+const GraphModel = require("./models/Graph");
 const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -270,6 +271,17 @@ app.post("/buy", async (req, res) => {
       { new: true }
     );
 
+    const user = await UserModel.findById(userId);
+    // Calculate the price based on user's ccm
+    const price = ((user.ccm + 1) * (user.ccm + 1) * 0.003 - user.ccm * user.ccm * 0.003).toFixed(2);
+    console.log("Printing Price", price);
+    const timestamp = new Date();
+    await GraphModel.create({
+      usernameofsc: username,
+      price,
+      timestamp,
+    });
+
     try {
       const newBuy = new BuyModel({
         amountboughtinfcoins: fcoinamount,
@@ -307,6 +319,18 @@ app.post("/sell", async (req, res) => {
       { new: true }
     );
 
+    // Save price and timestamp information to the Graph collection
+    const user = await UserModel.findById(userId);
+    // Calculate the price based on user's ccm
+    const price = ((user.ccm + 1) * (user.ccm + 1) * 0.003 - user.ccm * user.ccm * 0.003).toFixed(2);
+    console.log("Printing Price", price);
+    const timestamp = new Date();
+    await GraphModel.create({
+      usernameofsc: username,
+      price,
+      timestamp,
+    });
+
     try {
       const newSell = new SellModel({
         amountreceivedinfcoins: fcyouget,
@@ -323,6 +347,29 @@ app.post("/sell", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Error selling coins" });
+  }
+});
+
+// Add a new endpoint to fetch graph data based on usernameofsc and convert timestamp to unix
+app.get("/graphdata/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+    const graphData = await GraphModel.find({ usernameofsc: username })
+      .sort({ timestamp: 1 }) // Sort by timestamp in ascending order
+      .select("price timestamp -_id"); // Select only price and timestamp fields, exclude _id field
+
+    // Convert timestamp to Unix format
+    const formattedGraphData = graphData.map((data) => {
+      return {
+        price: data.price,
+        timestamp: new Date(data.timestamp).getTime(), // Convert timestamp to Unix format
+      };
+    });
+
+    res.status(200).json(formattedGraphData);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error fetching graph data" });
   }
 });
 
