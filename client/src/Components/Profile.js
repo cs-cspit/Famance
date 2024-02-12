@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import axios from "axios";
 import Navbar from "./Navbar";
 import Chart from "chart.js/auto";
-
 import "./Profile.css";
 
 function Profile() {
@@ -52,62 +51,60 @@ function Profile() {
       });
 
     // Fetch Specificsells of the user whose profile is currently open
-    // Fetch graph data from backend
     axios
-      .get(`http://localhost:3001/graphdata/${user.username}`)
+      .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
       .then((res) => {
         setGraphData(res.data);
-        // Call the function to draw the chart after fetching data
-        drawChart();
+        drawChart(res.data); // Call the function to draw the chart
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Error fetching graph data:", err));
   }, [id, user.username]);
 
-  console.log(graphData);
-
   // Function to draw the chart
   // Function to draw the chart
-  const drawChart = () => {
+  const drawChart = (data) => {
     const ctx = document.getElementById("myChart");
-    new Chart(ctx, {
+
+    // Check if a chart instance already exists
+    if (window.myChart instanceof Chart) {
+      window.myChart.destroy(); // Destroy the existing chart instance
+    }
+
+    window.myChart = new Chart(ctx, {
       type: "line",
       data: {
-        labels: graphData.map((data) => data.timestamp), // Use timestamp as labels
+        labels: data.map((entry) => entry.timestamp), // Use timestamps as labels
         datasets: [
           {
             label: "Price",
-            data: graphData.map((data) => data.price),
-            borderColor: "rgba(75, 192, 192, 1)",
+            data: data.map((entry) => entry.price), // Use prices as data points
+            borderColor: "#63F31E",
             borderWidth: 2,
             fill: false,
+            pointRadius: 0, // Remove dot-type circles on every point
           },
         ],
       },
       options: {
         scales: {
           x: {
-            type: "linear", // Use linear scale for timestamp
-            ticks: {
-              callback: function (value, index, values) {
-                return new Date(value).toLocaleString(); // Convert timestamp to human-readable format
-              },
-            },
-            title: {
-              display: true,
-              text: "Timestamp",
-            },
+            display: false, // Hide x axis
           },
           y: {
-            beginAtZero: true,
-            title: {
-              display: true,
-              text: "Price",
-            },
+            display: false, // Hide y axis
           },
         },
+        plugins: {
+          legend: {
+            display: false,
+          }
+        }
       },
     });
   };
+
+  // Function to draw the chart
+  // Function to draw the chart
 
   let calculatedFcoinBalance = Math.max(0, cuser.balance - fcoinamount);
 
@@ -253,7 +250,16 @@ function Profile() {
             setSpecificSells(res.data.specificSells);
             setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
           });
-      })
+        axios
+          .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
+          .then((res) => {
+            setGraphData(res.data);
+            drawChart(res.data); // Call the function to draw the chart
+          })
+          .catch((err) => console.error("Error fetching graph data:", err));
+        drawChart(graphData);
+      }, [user.username])
+
       .catch((err) => console.log(err));
   }
 
@@ -333,7 +339,15 @@ function Profile() {
             setSpecificSells(res.data.specificSells);
             setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
           });
-      })
+        axios
+          .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
+          .then((res) => {
+            setGraphData(res.data);
+            drawChart(res.data); // Call the function to draw the chart
+          })
+          .catch((err) => console.error("Error fetching graph data:", err));
+        drawChart(graphData);
+      }, [user.username])
       .catch((err) => console.log(err));
   }
 
@@ -378,9 +392,7 @@ function Profile() {
 
         <div className="graphbuysell">
           <div className="graph">
-            <div>
-              <canvas id="myChart"></canvas>{" "}
-            </div>
+            <canvas id="myChart" width="500" height="300"></canvas>
           </div>
 
           <div className="dual">

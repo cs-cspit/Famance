@@ -74,7 +74,7 @@ function Card(props) {
           </div>
           
           <div className="popup" onMouseEnter={handleHoverMcap}>
-            <h4>{(((props.ccm+1)*(props.ccm+1)) * 0.003) - props.cfi}</h4>
+            <h4>{((((props.ccm+1)*(props.ccm+1)) * 0.003) - props.cfi).toFixed(2)}</h4>
             <span className="popuptext" id={`popup-${props.mcap}`}>
               Price
             </span>
