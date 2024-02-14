@@ -7,13 +7,31 @@ import axios from "axios";
 
 function Home() {
   const [users, setUsers] = useState([]);
+  const [graphData, setGraphData] = useState([]);
+  
 
   useEffect(() => {
     axios
       .get("http://localhost:3001/allusers")
-      .then((users) => setUsers(users.data))
+      .then((response) => {
+        setUsers(response.data);
+        response.data.forEach((user) => {
+          axios
+            .get(`http://localhost:3001/graphdata/${user.username}`)
+            .then((res) => {
+              setGraphData((prevGraphData) => ({
+                ...prevGraphData,
+                [user.username]: res.data,
+              }));
+            })
+            .catch((err) => console.error("Error fetching graph data:", err));
+        });
+      })
       .catch((err) => console.log(err));
   }, []);
+
+  console.log(users)
+  // console.log(graphData[0])
 
   return (
     <>
@@ -21,18 +39,19 @@ function Home() {
       <div className="both">
         <Sidebar />
         <div className="statncard">
-          {users.map((users) => (
-            <Card 
-              key = {users._id}
-              id = {users._id}
-              username = {users.username}
-              firstname = {users.firstname}
-              lastname = {users.lastname}
-              imageURL = {users.imageURL}
-              cfi = {users.cfi}
-              check = {users.check}
-              ccm = {users.ccm}
-              bio = {users.bio}
+        {users.map((user) => (
+            <Card
+              key={user._id}
+              id={user._id}
+              username={user.username}
+              firstname={user.firstname}
+              lastname={user.lastname}
+              imageURL={user.imageURL}
+              cfi={user.cfi}
+              check={user.check}
+              ccm={user.ccm}
+              bio={user.bio}
+              graphData={graphData[user.username]} // Pass graph data for specific user
             />
           ))}
         </div>

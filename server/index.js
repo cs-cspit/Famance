@@ -350,8 +350,10 @@ app.post("/sell", async (req, res) => {
   }
 });
 
+
+
 // Add a new endpoint to fetch graph data based on usernameofsc and convert timestamp to unix
-app.get("/graphdata/:username", async (req, res) => {
+app.get("/specificgraphdatum/:username", async (req, res) => {
   try {
     const { username } = req.params;
     const graphData = await GraphModel.find({ usernameofsc: username })
@@ -372,6 +374,13 @@ app.get("/graphdata/:username", async (req, res) => {
     res.status(500).json({ error: "Error fetching graph data" });
   }
 });
+
+// Fetch graph data
+app.get("/all/allgraphdata", async (req, res)=>{
+  GraphModel.find()
+    .then((graphs) => res.json(graphs))
+    .catch((err) => console.log(err));
+})
 
 app.listen(3001, () => {
   console.log("server is running on port");

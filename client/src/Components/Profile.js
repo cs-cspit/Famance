@@ -52,7 +52,7 @@ function Profile() {
 
     // Fetch Specificsells of the user whose profile is currently open
     axios
-      .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
+      .get(`http://localhost:3001/specificgraphdatum/${user.username}`) // Assuming username is available in the user object
       .then((res) => {
         setGraphData(res.data);
         drawChart(res.data); // Call the function to draw the chart
@@ -251,7 +251,7 @@ function Profile() {
             setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
           });
         axios
-          .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
+          .get(`http://localhost:3001/specificgraphdatum/${user.username}`) // Assuming username is available in the user object
           .then((res) => {
             setGraphData(res.data);
             drawChart(res.data); // Call the function to draw the chart
@@ -340,7 +340,7 @@ function Profile() {
             setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
           });
         axios
-          .get(`http://localhost:3001/graphdata/${user.username}`) // Assuming username is available in the user object
+          .get(`http://localhost:3001/specificgraphdatum/${user.username}`) // Assuming username is available in the user object
           .then((res) => {
             setGraphData(res.data);
             drawChart(res.data); // Call the function to draw the chart
