@@ -15,23 +15,29 @@ function Home() {
       .get("http://localhost:3001/allusers")
       .then((response) => {
         setUsers(response.data);
-        response.data.forEach((user) => {
-          axios
-            .get(`http://localhost:3001/graphdata/${user.username}`)
+        // Create an object to accumulate graph data
+        let accumulatedGraphData = {};
+        // Create an array of promises for fetching graph data
+        const graphDataPromises = response.data.map((user) => {
+          return axios.get(`http://localhost:3001/specificgraphdatum/${user.username}`)
             .then((res) => {
-              setGraphData((prevGraphData) => ({
-                ...prevGraphData,
-                [user.username]: res.data,
-              }));
+              accumulatedGraphData[user.username] = res.data;
             })
             .catch((err) => console.error("Error fetching graph data:", err));
         });
+        // Wait for all promises to resolve
+        Promise.all(graphDataPromises)
+          .then(() => {
+            // Once all promises are resolved, update the state with the accumulated graph data
+            setGraphData(accumulatedGraphData);
+          });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => console.error("Error fetching users:", err));
   }, []);
 
-  console.log(users)
-  // console.log(graphData[0])
+  // console.log(users.id)
+  console.log("Graph Data",graphData)
+  
 
   return (
     <>
@@ -51,7 +57,8 @@ function Home() {
               check={user.check}
               ccm={user.ccm}
               bio={user.bio}
-              graphData={graphData[user.username]} // Pass graph data for specific user
+              graphData={graphData[user.username]}
+               // Pass graph data for specific user
             />
           ))}
         </div>

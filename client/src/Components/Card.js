@@ -8,17 +8,13 @@ function Card(props) {
   const { id } = useParams;
   // const [graphData, setGraphData] = useState([]);
   const [user, setUser] = useState({});
+  const chartId = `myChart-${props.id}`;
+
   console.log(props.graphData);
 
   const fullname = props.firstname + " " + props.lastname;
 
   useEffect(() => {
-    // Fetching all users to display their names in the graph popup
-    axios
-      .get("http://localhost:3001/allusers")
-      .then((users) => setUser(users.data))
-      .catch((err) => console.log(err));
-
     if (props.graphData) {
       drawChart(props.graphData);
     }
@@ -59,7 +55,7 @@ function Card(props) {
 
   // Function to draw the chart
   const drawChart = (data) => {
-    const ctx = document.getElementById("myChart");
+    const ctx = document.getElementById(chartId);
 
     // Check if a chart instance already exists
     if (window.myChart instanceof Chart) {
@@ -126,17 +122,17 @@ function Card(props) {
           </div>
 
           {props.graphData && (
-            <div className="popup">
-              <canvas
-                id={`myChart-${props.id}`} // Unique ID for each chart
-                width="500"
-                height="300"
-              ></canvas>
-              <span className="popuptext" id={`popup-${fullname}`}>
-                Graph
-              </span>
-            </div>
-          )}
+          <div className="popup">
+            <canvas
+              id={chartId} // Use unique ID for chart canvas
+              width="500"
+              height="300"
+            ></canvas>
+            <span className="popuptext" id={`popup-${fullname}`}>
+              Graph
+            </span>
+          </div>
+        )}
 
           <div className="popup" onMouseEnter={handleHoverCFI}>
             <h4>{props.cfi}</h4>
