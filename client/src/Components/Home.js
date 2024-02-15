@@ -36,6 +36,7 @@ function Home() {
   }, []);
 
   // console.log(users.id)
+  console.log("Users", users)
   console.log("Graph Data",graphData)
   
 

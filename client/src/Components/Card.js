@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import Chart from "chart.js/auto";
@@ -9,6 +9,8 @@ function Card(props) {
   // const [graphData, setGraphData] = useState([]);
   const [user, setUser] = useState({});
   const chartId = `myChart-${props.id}`;
+  const [chartInstance, setChartInstance] = useState(null);
+  const chartRef = useRef(null);
 
   console.log(props.graphData);
 
@@ -16,7 +18,43 @@ function Card(props) {
 
   useEffect(() => {
     if (props.graphData) {
-      drawChart(props.graphData);
+      const ctx = chartRef.current.getContext("2d");
+      if (chartInstance) {
+        // If chart instance exists, destroy it before creating a new one
+        chartInstance.destroy();
+      }
+      const newChartInstance = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: props.graphData.map((entry) => entry.timestamp),
+          datasets: [
+            {
+              label: "Price",
+              data: props.graphData.map((entry) => entry.price),
+              borderColor: "#63F31E",
+              borderWidth: 2,
+              fill: false,
+              pointRadius: 0,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            x: {
+              display: false,
+            },
+            y: {
+              display: false,
+            },
+          },
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+        },
+      });
+      setChartInstance(newChartInstance);
     }
   }, [props.graphData]);
 
@@ -54,46 +92,7 @@ function Card(props) {
   }
 
   // Function to draw the chart
-  const drawChart = (data) => {
-    const ctx = document.getElementById(chartId);
 
-    // Check if a chart instance already exists
-    if (window.myChart instanceof Chart) {
-      window.myChart.destroy(); // Destroy the existing chart instance
-    }
-
-    window.myChart = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: data.map((entry) => entry.timestamp), // Use timestamps as labels
-        datasets: [
-          {
-            label: "Price",
-            data: data.map((entry) => entry.price), // Use prices as data points
-            borderColor: "#63F31E",
-            borderWidth: 2,
-            fill: false,
-            pointRadius: 0, // Remove dot-type circles on every point
-          },
-        ],
-      },
-      options: {
-        scales: {
-          x: {
-            display: false, // Hide x axis
-          },
-          y: {
-            display: false, // Hide y axis
-          },
-        },
-        plugins: {
-          legend: {
-            display: false,
-          },
-        },
-      },
-    });
-  };
 
   return (
     <>
@@ -124,13 +123,11 @@ function Card(props) {
           {props.graphData && (
           <div className="popup">
             <canvas
-              id={chartId} // Use unique ID for chart canvas
-              width="500"
-              height="300"
+              ref={chartRef}
+              width="50"
+              height="30"
             ></canvas>
-            <span className="popuptext" id={`popup-${fullname}`}>
-              Graph
-            </span>
+            <span className="popuptext">Graph</span>
           </div>
         )}
 
