@@ -5,9 +5,8 @@ import Chart from "chart.js/auto";
 import "./Card.css";
 
 function Card(props) {
-  const { id } = useParams;
+  // const { id } = useParams;
   // const [graphData, setGraphData] = useState([]);
-  const [user, setUser] = useState({});
   const chartId = `myChart-${props.id}`;
   const [chartInstance, setChartInstance] = useState(null);
   const chartRef = useRef(null);
