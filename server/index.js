@@ -39,6 +39,15 @@ app.post("/signup", async (req, res) => {
     });
     // Saving/storing the new entity in mongodb
     await newUser.save();
+
+    // Create a document in GraphModel for the new user with price as 0
+    const graphData = new GraphModel({
+      usernameofsc: username,
+      price: 0,
+    });
+    // Creating a document with initial price 0
+    await graphData.save();
+    
     // Successful status
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
