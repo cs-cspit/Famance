@@ -48,7 +48,7 @@ app.post("/signup", async (req, res) => {
     });
     // Creating a document with initial price 0
     await graphData.save();
-    
+
     // Successful status
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {
@@ -93,6 +93,28 @@ app.post("/login", async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Error logging you in" });
+  }
+});
+
+// Add a new endpoint to handle search
+app.get("/search", async (req, res) => {
+  try {
+    // Extract the query parameter from the request body
+    const { query } = req.body;
+
+    // Construct the Mongoose query using the extracted query parameter as the username
+    const searchResult = await UserModel.find({
+      $or: [
+        { username: { $regex: query, $options: "i" } }, // Assuming you want to perform a case-insensitive search
+        { firstname: { $regex: query, $options: "i" } },
+        { lastname: { $regex: query, $options: "i" } },
+      ],
+    }).select("imageURL username firstname lastname"); // Selecting only imageURL, username, firstname, and lastname;
+
+    res.status(200).json({ results: searchResult });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error performing search" });
   }
 });
 
@@ -283,7 +305,10 @@ app.post("/buy", async (req, res) => {
 
     const user = await UserModel.findById(userId);
     // Calculate the price based on user's ccm
-    const price = ((user.ccm + 1) * (user.ccm + 1) * 0.003 - user.ccm * user.ccm * 0.003).toFixed(2);
+    const price = (
+      (user.ccm + 1) * (user.ccm + 1) * 0.003 -
+      user.ccm * user.ccm * 0.003
+    ).toFixed(2);
     console.log("Printing Price", price);
     const timestamp = new Date();
     await GraphModel.create({
@@ -332,7 +357,10 @@ app.post("/sell", async (req, res) => {
     // Save price and timestamp information to the Graph collection
     const user = await UserModel.findById(userId);
     // Calculate the price based on user's ccm
-    const price = ((user.ccm + 1) * (user.ccm + 1) * 0.003 - user.ccm * user.ccm * 0.003).toFixed(2);
+    const price = (
+      (user.ccm + 1) * (user.ccm + 1) * 0.003 -
+      user.ccm * user.ccm * 0.003
+    ).toFixed(2);
     console.log("Printing Price", price);
     const timestamp = new Date();
     await GraphModel.create({
@@ -360,8 +388,6 @@ app.post("/sell", async (req, res) => {
   }
 });
 
-
-
 // Add a new endpoint to fetch graph data based on usernameofsc and convert timestamp to unix
 app.get("/specificgraphdatum/:username", async (req, res) => {
   try {
@@ -386,11 +412,11 @@ app.get("/specificgraphdatum/:username", async (req, res) => {
 });
 
 // Fetch graph data
-app.get("/all/allgraphdata", async (req, res)=>{
+app.get("/all/allgraphdata", async (req, res) => {
   GraphModel.find()
     .then((graphs) => res.json(graphs))
     .catch((err) => console.log(err));
-})
+});
 
 app.listen(3001, () => {
   console.log("server is running on port");

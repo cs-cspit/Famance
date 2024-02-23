@@ -1,9 +1,11 @@
 import "./Navbar.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
 
 function Navbar() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
   const location = useLocation();
 
   const [username, setUsername] = useState("");
@@ -14,14 +16,43 @@ function Navbar() {
   const [password, setPassword] = useState("");
   const [identifier, setIdentifier] = useState("");
 
-  const isUserSignedIn = !!localStorage.getItem("token")
+  const isUserSignedIn = !!localStorage.getItem("token");
 
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const navigate = useNavigate();
 
-//   NO CRUCIAL USE OF THIS PART
+  
+  const searchChange = async (searchQuery) => {
+    try {
+      const response = await axios.get(`http://localhost:3001/search?query=${searchQuery}`);
+      console.log("Search Results:", response.data.results);
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      try {
+        const response = await axios.get(`/search`, { query: searchQuery });
+        setSearchResults(response.data.results);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    if (searchQuery.trim() !== "") {
+      fetchSearchResults();
+    } else {
+      setSearchResults([]);
+    }
+  }, [searchQuery]);
+
+  console.log("Search Results", searchResults);
+
+  //   NO CRUCIAL USE OF THIS PART
 
   const openSignupModal = () => {
     setIsSignupModalOpen(true);
@@ -70,10 +101,9 @@ function Navbar() {
         password,
       });
       const token = response.data.token;
-      console.log(response.data)
+      console.log(response.data);
       const userName = response.data.user.username;
-      
-  
+
       setIdentifier("");
       setPassword("");
 
@@ -87,36 +117,66 @@ function Navbar() {
     }
   };
 
-  const handleSignout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
+  const handleInputChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    // Call searchChange function when input changes
+    searchChange(query);
+  };
+
+  // const handleSignout = () => {
+  //   localStorage.removeItem("token");
+  //   navigate("/");
+  // };
+
+  const handleSearch = async () => {
+    try {
+      const response = await axios.get(`/search?query=${searchQuery}`);
+      setSearchResults(response.data);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <>
       <nav>
         <div className="leftnav">Famance</div>
+
+        <div className="search">
+        <input
+            type="text"
+            placeholder="Search"
+            value={searchQuery}
+            onChange={handleInputChange}
+          />
+        </div>
         <div className="rightnav">
-          Docs
-          <input placeholder="Search" type="text"></input>
           {isUserSignedIn ? (
-              <>
-                <div className="dropdown">
-                  <button className="dropbtn">
-                    <h4>{location.state ? location.state.id : null}</h4>
-                  </button>
-                  <div className="dropdown-content">
-                  <button onClick={handleSignout}>Signout</button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="login">
-              
-              <button className="signupbutton" onClick={openSignupModal}>SignUp</button>
-                <button className="loginbutton" onClick={openLoginModal}>LogIn</button>
-              </div>
-            )}
+            <>
+              <a
+                href="https://docs.google.com/document/d/13t8v3tCuKsq9OGy3hfbjm74hd7hawJWhkiQRhg2nReo/edit?usp=sharing"
+                target="_blank"
+              >
+                Whitepaper
+              </a>
+            </>
+          ) : (
+            <div className="entry">
+              <a
+                href="https://docs.google.com/document/d/13t8v3tCuKsq9OGy3hfbjm74hd7hawJWhkiQRhg2nReo/edit?usp=sharing"
+                target="_blank"
+              >
+                Whitepaper
+              </a>
+              <button className="signupbutton" onClick={openSignupModal}>
+                SignUp
+              </button>
+              <button className="loginbutton" onClick={openLoginModal}>
+                LogIn
+              </button>
+            </div>
+          )}
 
           {isLoginModalOpen && (
             <div onClick={closeLoginModal} className="modal">
@@ -149,7 +209,7 @@ function Navbar() {
               </div>
             </div>
           )}
-          
+
           {isSignupModalOpen && (
             <div onClick={closeSignupModal} className="modal">
               <div
@@ -210,7 +270,6 @@ function Navbar() {
             </div>
           )}
         </div>
-        
       </nav>
     </>
   );

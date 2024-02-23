@@ -23,9 +23,9 @@ function Sidebar() {
         <a href="#contact">
           <i class="fa fa-fw fa-envelope"></i> Notes
         </a>
-        <a href="#settings">
-          <i class="fa fa-fw fa-envelope"></i> Settings
-        </a>
+        <Link to="/settings">
+          <i class=""></i> Settings
+        </Link>
       </div>
     </>
   );
