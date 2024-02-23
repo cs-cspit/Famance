@@ -44,6 +44,7 @@ app.post("/signup", async (req, res) => {
     const graphData = new GraphModel({
       usernameofsc: username,
       price: 0,
+      timestamp: Date.now(),
     });
     // Creating a document with initial price 0
     await graphData.save();

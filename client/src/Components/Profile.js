@@ -19,7 +19,7 @@ function Profile() {
   const [totalAmountSoldInSC, setTotalAmountSoldInSC] = useState(0);
   const [graphData, setGraphData] = useState([]);
 
-  console.log("Printing username", user.username);
+  // console.log("Printing username", user.username);
 
   useEffect(() => {
     // Fetch user profile data
@@ -48,6 +48,17 @@ function Profile() {
       .then((res) => {
         setSpecificBuys(res.data.specificBuys);
         setTotalAmountBoughtInSC(res.data.totalAmountBoughtInSC);
+      });
+
+    axios
+      .get(`http://localhost:3001/fetchspecificsells/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((res) => {
+        setSpecificSells(res.data.specificSells);
+        setTotalAmountSoldInSC(res.data.totalAmountSoldInSC);
       });
 
     // Fetch Specificsells of the user whose profile is currently open
@@ -97,8 +108,8 @@ function Profile() {
         plugins: {
           legend: {
             display: false,
-          }
-        }
+          },
+        },
       },
     });
   };
@@ -110,8 +121,8 @@ function Profile() {
 
   // While buying onchange of input
   function socialCoinsYouGet(famount) {
-    console.log("Printing famount", famount);
-    console.log("Prinint calculatedFcoinBalance", calculatedFcoinBalance);
+    // console.log("Printing famount", famount);
+    // console.log("Prinint calculatedFcoinBalance", calculatedFcoinBalance);
     if (famount <= calculatedFcoinBalance) {
       axios
         .get(`http://localhost:3001/${id}`)
@@ -135,18 +146,21 @@ function Profile() {
   }
 
   let calculatedScoinBalance =
-    Math.max(0, totalAmountBoughtInSC - totalAmountSoldInSC) +
-    parseFloat(scoinamount);
+    (totalAmountBoughtInSC).toFixed(2) - (totalAmountSoldInSC).toFixed(2) -
+    parseFloat(scoinamount).toFixed(2);
+
+    console.log("CalculatedScoinBalance", calculatedScoinBalance)
 
   // While selling the calculations are done here for updating balance of scoins
   function fcoinsYouGet(samount) {
     console.log("Printing samount", samount);
-    console.log("Printing calculatedScoinBalance", calculatedScoinBalance);
-    if (samount <= calculatedScoinBalance) {
-      console.log("totalAmountBoughtInSC", totalAmountBoughtInSC);
-      console.log("totalAmountSoldInSC", totalAmountSoldInSC);
-
-      console.log("calculatedScoinBalance", calculatedScoinBalance);
+      // console.log("Printing calculatedScoinBalance", calculatedScoinBalance);
+    
+      // console.log("Printing samount After If Statement", samount);
+      // console.log("totalAmountBoughtInSC", totalAmountBoughtInSC);
+      // console.log("totalAmountSoldInSC", totalAmountSoldInSC);
+      if (calculatedScoinBalance > 0){
+      // console.log("calculatedScoinBalance", calculatedScoinBalance);
       axios
         .get(`http://localhost:3001/${id}`)
         .then((res) => setUser(res.data.user))
@@ -164,17 +178,28 @@ function Profile() {
         0,
         totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount
       );
+
+      console.log("Printing User.CCM", user.ccm)
+      // console.log("Printing User.CCM*User.CCM*0.003", user.ccm*user.ccm*0.003)
       let x = user.ccm * user.ccm * 0.003;
       console.log("Printing X", x);
+      // console.log("User.CCM - samount",user.ccm - samount)
       let y = (user.ccm - samount) * (user.ccm - samount) * 0.003;
       console.log("Printing Y", y);
       let z = x - y;
-      console.log("Printing z", z);
-      setFcyouget(z.toFixed(2));
-    }
+      // console.log("Printing Z", z);
+
+      setFcyouget(parseFloat(z.toFixed(2)));
+      
+      
+    
+    
+    setFcyouget(z.toFixed(2));
+      }
   }
 
   function onBuy() {
+
     axios
       .get(`http://localhost:3001/${id}`)
       .then((res) => setUser(res.data.user))
@@ -264,6 +289,16 @@ function Profile() {
   }
 
   function onSell() {
+
+    // Check if the entered amount is greater than 0
+    if (calculatedScoinBalance < 0) {
+      console.log("Invalid sell amount. Please enter a valid amount.");
+      return; // Exit the function if amount is not valid
+    }
+
+
+
+  
     axios
       .get(`http://localhost:3001/${id}`)
       .then((res) => setUser(res.data.user))
@@ -351,6 +386,8 @@ function Profile() {
       .catch((err) => console.log(err));
   }
 
+  // console.log("Printing FC you get",fcyouget)
+
   return (
     <>
       <Navbar />
@@ -412,7 +449,7 @@ function Profile() {
                 {user.username} coins you get ≈ {scyouget}
               </h3>
               <h3>Fcoin balance ≈ {cuser.balance - fcoinamount}</h3>
-              <button onClick={onBuy} disabled={calculatedFcoinBalance === 0}>
+              <button onClick={onBuy} disabled={isNaN(fcoinamount) || fcoinamount <= 0}>
                 Buy
               </button>
             </div>
@@ -423,8 +460,8 @@ function Profile() {
               <input
                 type="number"
                 onChange={(e) => {
-                  const samount = e.target.value;
-                  setScoinamount(samount);
+                  const samount = parseFloat(e.target.value);
+                  setScoinamount(parseFloat(samount));
                   fcoinsYouGet(samount);
                 }}
                 placeholder={`Enter ${user.username} to sell`}
@@ -435,10 +472,10 @@ function Profile() {
                 {(
                   totalAmountBoughtInSC -
                   totalAmountSoldInSC -
-                  scoinamount
+                  parseFloat(scoinamount)
                 ).toFixed(2)}
               </h3>
-              <button onClick={onSell}>Sell</button>
+              <button onClick={onSell} disabled={isNaN(scoinamount) || scoinamount <= 0}>Sell</button>
             </div>
           </div>
         </div>
