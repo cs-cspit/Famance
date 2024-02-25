@@ -96,6 +96,30 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Add the changepropic endpoint
+app.post("/changepropic", upload.single("image"), async (req, res) => {
+  try {
+    const imageURL = req.file.path;
+
+    // Extract user ID from the token
+    const tokenHeader = req.header("Authorization");
+    if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const token = tokenHeader.replace("Bearer ", "");
+    const decoded = jwt.verify(token, SECRET_KEY);
+    const userId = decoded.userId;
+
+    // Update user's profile picture in the database
+    await UserModel.findByIdAndUpdate(userId, { imageURL });
+
+    res.status(200).json({ message: "Profile picture changed successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Error changing profile picture" });
+  }
+});
+
 // Add a new endpoint to handle search
 app.get("/search", async (req, res) => {
   try {
@@ -146,6 +170,8 @@ app.get("/myprofile", async (req, res) => {
         bio: user.bio,
         imageURL: user.imageURL,
         balance: user.balance,
+        ccm: user.ccm,
+        cfi: user.cfi,
         // Add other properties you want to send to the client
       },
     });
@@ -156,11 +182,58 @@ app.get("/myprofile", async (req, res) => {
 });
 
 // Projecting all the people in home page
+// Projecting all the people in home page
 app.get("/allusers", (req, res) => {
-  UserModel.find()
-    .then((users) => res.json(users))
-    .catch((err) => res.json(err));
+  const { q } = req.query;
+
+  // Check if the query parameter is provided
+  if (q) {
+    const keys = ["username", "firstname", "lastname"];
+
+    // Define a function to filter users based on the query
+    const search = (data) => {
+      return data.filter((item) =>
+        keys.some((key) => item[key].toLowerCase().includes(q))
+      );
+    };
+
+    UserModel.find()
+      .then((users) => res.json(search(users)))
+      .catch((err) => res.json(err));
+  } else {
+    // If no query parameter is provided, return all users
+    UserModel.find()
+      .then((users) => res.json(users))
+      .catch((err) => res.json(err));
+  }
 });
+
+app.get("/portfolio", async (req, res)=>{
+  try{
+    const tokenHeader = req.header("Authorization")
+
+    if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
+      const token = tokenHeader.replace("Bearer ", "")
+      const decoded = jwt.verify(token, SECRET_KEY)
+      const loggedInUserId = decoded.userId
+  
+      const loggedInUser = await UserModel.findById(loggedInUserId)
+      const loggedInUsername = loggedInUser.username
+  
+      const portfolioBuys = await BuyModel.find({
+        usernameofbuyer: loggedInUsername
+      })
+      const portfolioSells = await SellModel.find({
+        usernameofseller: loggedInUsername
+      })
+      res.status(200).json({portfolioBuys, portfolioSells})
+  }
+  }
+  catch(error){
+    console.log(error)
+  }
+})
+
 
 // Get all buys
 app.get("/fetchbuys", (req, res) => {
@@ -286,7 +359,7 @@ app.get("/:id", (req, res) => {
 // Update Balance endpoint
 app.post("/buy", async (req, res) => {
   try {
-    const { fcoinamount, scyouget, cuserId, userId, cusername, username } =
+    const { fcoinamount, scyouget, cuserId, userId, cusername, username, userpropic } =
       req.body;
 
     // Update balance of the currently logged-in user
@@ -323,6 +396,8 @@ app.post("/buy", async (req, res) => {
         amountboughtinsc: scyouget,
         usernameofbuyer: cusername,
         usernameofsc: username,
+        userid: userId,
+        userpropic: userpropic,
       });
 
       await newBuy.save();
@@ -338,7 +413,7 @@ app.post("/buy", async (req, res) => {
 
 app.post("/sell", async (req, res) => {
   try {
-    const { scoinamount, fcyouget, cuserId, userId, cusername, username } =
+    const { scoinamount, fcyouget, cuserId, userId, cusername, username, userpropic } =
       req.body;
     // Update the user's data in the database
     await UserModel.findByIdAndUpdate(
@@ -375,6 +450,8 @@ app.post("/sell", async (req, res) => {
         amountsoldinsc: scoinamount,
         usernameofsc: username,
         usernameofseller: cusername,
+        userid: userId,
+        userpropic: userpropic,
       });
       await newSell.save();
     } catch (e) {

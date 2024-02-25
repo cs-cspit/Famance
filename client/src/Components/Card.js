@@ -5,24 +5,22 @@ import Chart from "chart.js/auto";
 import "./Card.css";
 
 function Card(props) {
-  // const { id } = useParams;
-  // const [graphData, setGraphData] = useState([]);
   const chartId = `myChart-${props.id}`;
   const [chartInstance, setChartInstance] = useState(null);
   const chartRef = useRef(null);
 
-  console.log(props.graphData);
-
   const fullname = props.firstname + " " + props.lastname;
 
   useEffect(() => {
-    if (props.graphData) {
-      const ctx = chartRef.current.getContext("2d");
+    let newChartInstance = null;
+
+    if (props.graphData && chartRef.current) {
       if (chartInstance) {
-        // If chart instance exists, destroy it before creating a new one
-        chartInstance.destroy();
+        chartInstance.destroy(); // Destroy the previous chart instance
       }
-      const newChartInstance = new Chart(ctx, {
+
+      const ctx = chartRef.current.getContext("2d");
+      newChartInstance = new Chart(ctx, {
         type: "line",
         data: {
           labels: props.graphData.map((entry) => entry.timestamp),
@@ -55,43 +53,23 @@ function Card(props) {
       });
       setChartInstance(newChartInstance);
     }
-  }, [props.graphData]);
 
-  // When the user hovers over the username, open the popup
-  function handleHoverUsername() {
-    var popup = document.getElementById(`popup-${props.username}`);
+    // Cleanup function
+    return () => {
+      if (newChartInstance) {
+        newChartInstance.destroy();
+      }
+    };
+  }, [props.graphData]); // Only re-run the effect if props.graphData changes
+
+  // Function to handle hover events
+  function handleHover(event, targetId) {
+    const popup = document.getElementById(`popup-${targetId}`);
     popup.classList.add("show");
     setTimeout(function () {
       popup.classList.remove("show");
     }, 2000); // 2000 milliseconds (2 seconds) delay
   }
-
-  function handleHoverCFI() {
-    var popup = document.getElementById(`popup-${props.cfi}`);
-    popup.classList.add("show");
-    setTimeout(function () {
-      popup.classList.remove("show");
-    }, 2000); // 2000 milliseconds (2 seconds) delay
-  }
-
-  function handleHoverName() {
-    var popup = document.getElementById(`popup-${fullname}`);
-    popup.classList.add("show");
-    setTimeout(function () {
-      popup.classList.remove("show");
-    }, 2000); // 2000 milliseconds (2 seconds) delay
-  }
-
-  function handleHoverMcap() {
-    var popup = document.getElementById(`popup-${props.mcap}`);
-    popup.classList.add("show");
-    setTimeout(function () {
-      popup.classList.remove("show");
-    }, 2000); // 2000 milliseconds (2 seconds) delay
-  }
-
-  // Function to draw the chart
-
 
   return (
     <>
@@ -105,14 +83,17 @@ function Card(props) {
             />
           )}
 
-          <div className="popup" onMouseEnter={handleHoverUsername}>
+          <div
+            className="popup"
+            onMouseEnter={(e) => handleHover(e, props.username)}
+          >
             <h4>{props.username}</h4>
             <span className="popuptext" id={`popup-${props.username}`}>
               Username
             </span>
           </div>
 
-          <div className="popup" onMouseEnter={handleHoverName}>
+          <div className="popup" onMouseEnter={(e) => handleHover(e, fullname)}>
             <h4>{fullname}</h4>
             <span className="popuptext" id={`popup-${fullname}`}>
               Name
@@ -120,30 +101,33 @@ function Card(props) {
           </div>
 
           {props.graphData && (
-          <div className="popup">
-            <canvas
-              ref={chartRef}
-              width="50"
-              height="30"
-            ></canvas>
-            <span className="popuptext">Graph</span>
-          </div>
-        )}
+            <div className="popup">
+              <canvas ref={chartRef} width="50" height="30"></canvas>
+              <span className="popuptext">Graph</span>
+            </div>
+          )}
 
-          <div className="popup" onMouseEnter={handleHoverCFI}>
-            <h4>{props.cfi}</h4>
-            <span className="popuptext" id={`popup-${props.cfi}`}>
+          <div
+            className="popup"
+            onMouseEnter={(e) => handleHover(e, `cfi-${props.id}`)}
+          >
+            <h4>{(props.cfi).toFixed(2)}</h4>
+            <span className="popuptext" id={`popup-cfi-${props.id}`}>
               Market Cap
             </span>
           </div>
 
-          <div className="popup" onMouseEnter={handleHoverMcap}>
+          <div
+            className="popup"
+            onMouseEnter={(e) => handleHover(e, `price-${props.id}`)}
+          >
             <h4>
-              {((props.ccm + 1) * (props.ccm + 1) * 0.003 - props.cfi).toFixed(
-                2
-              )}
+              {(
+                (props.ccm + 1) * (props.ccm + 1) * 0.003 -
+                props.ccm * props.ccm * 0.003
+              ).toFixed(2)}
             </h4>
-            <span className="popuptext" id={`popup-${props.mcap}`}>
+            <span className="popuptext" id={`popup-price-${props.id}`}>
               Price
             </span>
           </div>

@@ -11,9 +11,9 @@ function Sidebar() {
         <a href="#services">
           <i class="fa fa-fw fa-wrench"></i> Wallet
         </a>
-        <a href="#clients">
-          <i class="fa fa-fw fa-user"></i> Portfolio
-        </a>
+        <Link to="/portfolio">
+          <i class=""></i> Portfolio
+        </Link>
         <a href="#contact">
           <i class="fa fa-fw fa-envelope"></i> Watchlist
         </a>

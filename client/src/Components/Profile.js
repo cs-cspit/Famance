@@ -72,7 +72,6 @@ function Profile() {
   }, [id, user.username]);
 
   // Function to draw the chart
-  // Function to draw the chart
   const drawChart = (data) => {
     const ctx = document.getElementById("myChart");
 
@@ -230,6 +229,7 @@ function Profile() {
           userId: id,
           cusername: cuser.username,
           username: user.username,
+          userpropic: user.imageURL,
         }, // Send the fcoinamount, scyouget, and userId to the backend
         {
           headers: {
@@ -329,6 +329,7 @@ function Profile() {
           userId: id,
           cusername: cuser.username,
           username: user.username,
+          userpropic: user.imageURL,
         }, // Send the scoinamount, fcyouget, and userId to the backend
         {
           headers: {
@@ -435,7 +436,7 @@ function Profile() {
           <div className="dual">
             {/* Buy/Deposit */}
             <div className="buybox">
-              <h2>Buy {user.username} coins</h2>
+              <h3>Buy {user.username} coins</h3>
               <input
                 type="number"
                 onChange={(e) => {
@@ -456,7 +457,7 @@ function Profile() {
 
             {/* Sell/Withdraw */}
             <div className="sellbox">
-              <h2>Withdraw {user.username} coins</h2>
+              <h3>Withdraw {user.username} coins</h3>
               <input
                 type="number"
                 onChange={(e) => {
@@ -466,9 +467,9 @@ function Profile() {
                 }}
                 placeholder={`Enter ${user.username} to sell`}
               />
-              <h3>Fcoins you get ≈ {fcyouget}</h3>
+              <h3>Fcoins you get ≈ {(fcyouget).toFixed(2)}</h3>
               <h3>
-                {user.username} coins you have ≈{" "}
+                {user.username} coins ≈{" "}
                 {(
                   totalAmountBoughtInSC -
                   totalAmountSoldInSC -

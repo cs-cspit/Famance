@@ -18,6 +18,16 @@ nav{
     align-items: center;
     color: #2c87f0;
 }
+
+.leftnav Link{
+  color: #2c87f0;
+  text-decoration: none;
+}
+
+.leftnav a {
+  color: #2c87f0; /* Set color to #2c87f0 */
+  text-decoration: none; /* Remove text decoration */
+}
 .rightnav{
     color: white;
     display: flex;
@@ -31,6 +41,9 @@ nav{
     height: 40px;
     border-radius: 10px;
     font-size: 1.2rem;
+    font-weight: bold;
+    color: #2c87f0;
+    padding: 2px;
 }
 
 .rightnav a {

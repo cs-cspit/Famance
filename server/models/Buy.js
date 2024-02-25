@@ -6,6 +6,8 @@ const BuySchema = new mongoose.Schema({
     timestamp: {type: Date, default: Date.now},
     usernameofbuyer: {type: String},
     usernameofsc: {type: String},
+    userid: {type: String},
+    userpropic: {type: String},
 })
 
 const BuyModel = mongoose.model("buys", BuySchema)

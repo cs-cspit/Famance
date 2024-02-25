@@ -2,11 +2,10 @@ import "./Navbar.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useLocation, Link } from "react-router-dom";
+import Chart from 'chart.js/auto'
 
-function Navbar() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]);
-  const location = useLocation();
+function Navbar({setSearchQuery}) {
+  const [searchInput, setSearchInput] = useState("");
 
   const [username, setUsername] = useState("");
   const [firstname, setFirstname] = useState("");
@@ -23,34 +22,12 @@ function Navbar() {
 
   const navigate = useNavigate();
 
-  
-  const searchChange = async (searchQuery) => {
-    try {
-      const response = await axios.get(`http://localhost:3001/search?query=${searchQuery}`);
-      console.log("Search Results:", response.data.results);
-    } catch (error) {
-      console.log("Error:", error);
-    }
+  const handleSearch = (e) => {
+    const query = e.target.value;
+    setSearchInput(query);
+    setSearchQuery(query); // Call setSearchQuery from the parent component
   };
 
-  useEffect(() => {
-    const fetchSearchResults = async () => {
-      try {
-        const response = await axios.get(`/search`, { query: searchQuery });
-        setSearchResults(response.data.results);
-      } catch (error) {
-        console.log(error);
-      }
-    };
-
-    if (searchQuery.trim() !== "") {
-      fetchSearchResults();
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchQuery]);
-
-  console.log("Search Results", searchResults);
 
   //   NO CRUCIAL USE OF THIS PART
 
@@ -117,38 +94,24 @@ function Navbar() {
     }
   };
 
-  const handleInputChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    // Call searchChange function when input changes
-    searchChange(query);
-  };
-
   // const handleSignout = () => {
   //   localStorage.removeItem("token");
   //   navigate("/");
   // };
 
-  const handleSearch = async () => {
-    try {
-      const response = await axios.get(`/search?query=${searchQuery}`);
-      setSearchResults(response.data);
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  
 
   return (
     <>
       <nav>
-        <div className="leftnav">Famance</div>
+        <div className="leftnav"><Link to="/">Famance</Link></div>
 
         <div className="search">
         <input
             type="text"
             placeholder="Search"
-            value={searchQuery}
-            onChange={handleInputChange}
+            value={searchInput}
+            onChange={handleSearch}
           />
         </div>
         <div className="rightnav">

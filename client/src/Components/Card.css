@@ -13,6 +13,10 @@
     justify-content: space-between;
 }
 
+a{
+  text-decoration: none;
+}
+
 .card .cardpropic {
     width: 8vh;
     height: 8vh;
