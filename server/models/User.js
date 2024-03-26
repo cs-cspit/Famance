@@ -13,6 +13,5 @@ const UserSchema = new mongoose.Schema({
     password: {type: String, required: true},
     imageURL: {type: String, default: "uploads/default.jpg"}
 })
-
 const UserModel = mongoose.model("users", UserSchema)
 module.exports = UserModel

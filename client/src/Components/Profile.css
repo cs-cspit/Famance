@@ -3,8 +3,8 @@
 }
 
 .profilepic {
-    width: 5em;
-    height: 5em;
+    width: 10em;
+    height: 10em;
     border-radius: 100%;
 }
 
@@ -25,7 +25,8 @@
 }
 
 .ccmcfiprice{
-    width: 900px;
+    width: 1150px;
+    height: 60px;
     background: #212121;
     border-radius: 15px;
     display: flex;
@@ -44,8 +45,8 @@
 }
 
 .graph{
-    width: 600px;
-    height: 400px;
+    width: 800px;
+    height: 500px;
     background: #212121;
     border-radius: 15px;
     
@@ -58,8 +59,8 @@
 
 .buybox{
     background: #212121;
-    width: 300px;
-    height: 180px;
+    width: 350px;
+    height: 230px;
     padding: 5px;
     border-radius: 15px;
     position: relative;
@@ -95,12 +96,13 @@
     bottom: 10px; /* Added */
     left: 50%; /* Added */
     transform: translateX(-50%); /* Added */
+    cursor: pointer;
 }
 
 .sellbox{
     background: #212121;
-    width: 300px;
-    height: 180px;
+    width: 350px;
+    height: 230px;
     padding: 5px;
     border-radius: 15px;
     position: relative;
@@ -136,5 +138,6 @@
     bottom: 10px; /* Added */
     left: 50%; /* Added */
     transform: translateX(-50%); /* Added */
+    cursor: pointer;
 }
 

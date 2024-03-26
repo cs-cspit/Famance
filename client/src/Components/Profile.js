@@ -140,25 +140,24 @@ function Profile() {
       let x = parseFloat(famount) + parseFloat(user.cfi);
       let y = x / 0.003;
 
-      setScyouget((Math.sqrt(y) - parseFloat(user.ccm)).toFixed(2));
+      setScyouget(Math.sqrt(y) - parseFloat(user.ccm));
     }
   }
 
   let calculatedScoinBalance =
-    (totalAmountBoughtInSC).toFixed(2) - (totalAmountSoldInSC).toFixed(2) -
-    parseFloat(scoinamount).toFixed(2);
+    totalAmountBoughtInSC - totalAmountSoldInSC - parseFloat(scoinamount);
 
-    console.log("CalculatedScoinBalance", calculatedScoinBalance)
+  console.log("CalculatedScoinBalance", calculatedScoinBalance);
 
   // While selling the calculations are done here for updating balance of scoins
   function fcoinsYouGet(samount) {
     console.log("Printing samount", samount);
-      // console.log("Printing calculatedScoinBalance", calculatedScoinBalance);
-    
-      // console.log("Printing samount After If Statement", samount);
-      // console.log("totalAmountBoughtInSC", totalAmountBoughtInSC);
-      // console.log("totalAmountSoldInSC", totalAmountSoldInSC);
-      if (calculatedScoinBalance > 0){
+    // console.log("Printing calculatedScoinBalance", calculatedScoinBalance);
+
+    // console.log("Printing samount After If Statement", samount);
+    // console.log("totalAmountBoughtInSC", totalAmountBoughtInSC);
+    // console.log("totalAmountSoldInSC", totalAmountSoldInSC);
+    if (calculatedScoinBalance > 0) {
       // console.log("calculatedScoinBalance", calculatedScoinBalance);
       axios
         .get(`http://localhost:3001/${id}`)
@@ -178,7 +177,7 @@ function Profile() {
         totalAmountBoughtInSC - totalAmountSoldInSC - scoinamount
       );
 
-      console.log("Printing User.CCM", user.ccm)
+      console.log("Printing User.CCM", user.ccm);
       // console.log("Printing User.CCM*User.CCM*0.003", user.ccm*user.ccm*0.003)
       let x = user.ccm * user.ccm * 0.003;
       console.log("Printing X", x);
@@ -188,17 +187,14 @@ function Profile() {
       let z = x - y;
       // console.log("Printing Z", z);
 
-      setFcyouget(parseFloat(z.toFixed(2)));
-      
-      
-    
-    
-    setFcyouget(z.toFixed(2));
-      }
+      setFcyouget(parseFloat(z));
+
+      setFcyouget(z);
+    }
   }
 
   function onBuy() {
-
+    
     axios
       .get(`http://localhost:3001/${id}`)
       .then((res) => setUser(res.data.user))
@@ -289,16 +285,12 @@ function Profile() {
   }
 
   function onSell() {
-
     // Check if the entered amount is greater than 0
     if (calculatedScoinBalance < 0) {
       console.log("Invalid sell amount. Please enter a valid amount.");
       return; // Exit the function if amount is not valid
     }
 
-
-
-  
     axios
       .get(`http://localhost:3001/${id}`)
       .then((res) => setUser(res.data.user))
@@ -410,23 +402,21 @@ function Profile() {
         <div className="ccmcfiprice">
           <div className="ccm">
             <h3>Coins in circulation</h3>
-            <h3>{user.ccm}</h3>
+            <h3>{user.ccm}</h3>{" "}
           </div>
           <div className="cfi">
             <h3>Market Cap</h3>
-            <h3>{user.cfi}</h3>
+            <h3>{user.cfi}</h3>{" "}
           </div>
           <div className="price">
             <h3>Current Price</h3>
             <h3>
-              {" "}
-              {(
-                (user.ccm + 1) * (user.ccm + 1) * 0.003 -
-                user.ccm * user.ccm * 0.003
-              ).toFixed(2)}
-            </h3>
+              {(user.ccm + 1) * (user.ccm + 1) * 0.003 -
+                user.ccm * user.ccm * 0.003}
+            </h3>{" "}
           </div>
         </div>
+        <br />
 
         <div className="graphbuysell">
           <div className="graph">
@@ -437,20 +427,30 @@ function Profile() {
             {/* Buy/Deposit */}
             <div className="buybox">
               <h3>Buy {user.username} coins</h3>
+              <br />
               <input
                 type="number"
+                step="any"
                 onChange={(e) => {
-                  const famount = e.target.value;
-                  setFcoinamount(famount);
-                  socialCoinsYouGet(famount);
+                  const input = e.target.value;
+                  // Modified regex to allow any number of decimal places
+                  const regex = /^\d*\.?\d*$/;
+                  if (regex.test(input) || input === "") {
+                    setFcoinamount(input);
+                    socialCoinsYouGet(input);
+                  }
                 }}
                 placeholder="Enter Fcoin amount"
               />
+
               <h3>
                 {user.username} coins you get ≈ {scyouget}
               </h3>
               <h3>Fcoin balance ≈ {cuser.balance - fcoinamount}</h3>
-              <button onClick={onBuy} disabled={isNaN(fcoinamount) || fcoinamount <= 0}>
+              <button
+                onClick={onBuy}
+                disabled={isNaN(fcoinamount) || fcoinamount <= 0}
+              >
                 Buy
               </button>
             </div>
@@ -460,23 +460,39 @@ function Profile() {
               <h3>Withdraw {user.username} coins</h3>
               <input
                 type="number"
+                step="any"
                 onChange={(e) => {
-                  const samount = parseFloat(e.target.value);
-                  setScoinamount(parseFloat(samount));
-                  fcoinsYouGet(samount);
+                  const input = e.target.value;
+                  const regex = /^\d*\.?\d*$/; // Modified regex to allow any number of decimal places
+                  if (regex.test(input) || input === "") {
+                    const samount = parseFloat(input);
+                    if (!isNaN(samount)) {
+                      setScoinamount(samount);
+                      fcoinsYouGet(samount);
+                    }
+                  }
                 }}
                 placeholder={`Enter ${user.username} to sell`}
               />
-              <h3>Fcoins you get ≈ {(fcyouget).toFixed(2)}</h3>
+
+              <h3>Fcoins you get ≈ {fcyouget}</h3>
               <h3>
-                {user.username} coins ≈{" "}
-                {(
+                {user.username} coins ≈
+                {totalAmountBoughtInSC -
+                  totalAmountSoldInSC -
+                  parseFloat(scoinamount)}
+                {/* {(
                   totalAmountBoughtInSC -
                   totalAmountSoldInSC -
                   parseFloat(scoinamount)
-                ).toFixed(2)}
+                )} */}
               </h3>
-              <button onClick={onSell} disabled={isNaN(scoinamount) || scoinamount <= 0}>Sell</button>
+              <button
+                onClick={onSell}
+                disabled={isNaN(scoinamount) || scoinamount <= 0}
+              >
+                Sell
+              </button>
             </div>
           </div>
         </div>

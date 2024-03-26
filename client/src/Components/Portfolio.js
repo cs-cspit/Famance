@@ -12,6 +12,16 @@ function Portfolio() {
   const [holdings, setHoldings] = useState([]);
 
   useEffect(() => {
+
+    
+    
+    if (holdings.length > 0) {
+      renderPieChart();
+    }
+  }, [holdings]);
+
+  useEffect(() => {
+    
     axios
       .get("http://localhost:3001/portfolio", {
         headers: {
@@ -41,7 +51,6 @@ function Portfolio() {
         );
       }
     });
-
     // Subtract holdings based on sells
     sells.forEach((sell) => {
       const { usernameofsc, amountreceivedinfcoins } = sell;
@@ -61,13 +70,11 @@ function Portfolio() {
     setHoldings(filteredHoldings);
   };
 
-  useEffect(() => {
-    if (holdings.length > 0) {
-      renderPieChart();
-    }
-  }, [holdings]);
+  
 
   const renderPieChart = () => {
+    
+    
     // Check if a chart instance already exists
     if (window.myChart instanceof Chart) {
       window.myChart.destroy(); // Destroy the existing chart instance

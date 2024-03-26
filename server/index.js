@@ -208,32 +208,30 @@ app.get("/allusers", (req, res) => {
   }
 });
 
-app.get("/portfolio", async (req, res)=>{
-  try{
-    const tokenHeader = req.header("Authorization")
+app.get("/portfolio", async (req, res) => {
+  try {
+    const tokenHeader = req.header("Authorization");
 
     if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
-      const token = tokenHeader.replace("Bearer ", "")
-      const decoded = jwt.verify(token, SECRET_KEY)
-      const loggedInUserId = decoded.userId
-  
-      const loggedInUser = await UserModel.findById(loggedInUserId)
-      const loggedInUsername = loggedInUser.username
-  
-      const portfolioBuys = await BuyModel.find({
-        usernameofbuyer: loggedInUsername
-      })
-      const portfolioSells = await SellModel.find({
-        usernameofseller: loggedInUsername
-      })
-      res.status(200).json({portfolioBuys, portfolioSells})
-  }
-  }
-  catch(error){
-    console.log(error)
-  }
-})
+      const token = tokenHeader.replace("Bearer ", "");
+      const decoded = jwt.verify(token, SECRET_KEY);
+      const loggedInUserId = decoded.userId;
 
+      const loggedInUser = await UserModel.findById(loggedInUserId);
+      const loggedInUsername = loggedInUser.username;
+
+      const portfolioBuys = await BuyModel.find({
+        usernameofbuyer: loggedInUsername,
+      });
+      const portfolioSells = await SellModel.find({
+        usernameofseller: loggedInUsername,
+      });
+      res.status(200).json({ portfolioBuys, portfolioSells });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+});
 
 // Get all buys
 app.get("/fetchbuys", (req, res) => {
@@ -357,31 +355,37 @@ app.get("/:id", (req, res) => {
 // Update CCM endpoint
 // Update CFI endpoint
 // Update Balance endpoint
+// Update CCM, CFI, and Balance endpoint
 app.post("/buy", async (req, res) => {
   try {
-    const { fcoinamount, scyouget, cuserId, userId, cusername, username, userpropic } =
-      req.body;
+    const {
+      fcoinamount,
+      scyouget,
+      cuserId,
+      userId,
+      cusername,
+      username,
+      userpropic,
+    } = req.body;
 
-    // Update balance of the currently logged-in user
+    // Round down fcoinamount and scyouget to two decimal places
+
+    // Update balance of the currently logged-in user rounded down to two decimal places
     await UserModel.findByIdAndUpdate(
       cuserId,
       { $inc: { balance: -fcoinamount } },
       { new: true }
     );
 
-    // Update cfi and ccm of the user whose profile is currently open
+    // Update cfi and ccm of the user whose profile is currently open rounded down to two decimal places
     await UserModel.findByIdAndUpdate(
       userId,
       { $inc: { cfi: fcoinamount, ccm: scyouget } },
       { new: true }
     );
 
-    const user = await UserModel.findById(userId);
     // Calculate the price based on user's ccm
-    const price = (
-      (user.ccm + 1) * (user.ccm + 1) * 0.003 -
-      user.ccm * user.ccm * 0.003
-    ).toFixed(2);
+    const price = ((scyouget + 1) * (scyouget + 1) * 0.003 - scyouget * scyouget * 0.003);
     console.log("Printing Price", price);
     const timestamp = new Date();
     await GraphModel.create({
@@ -390,20 +394,17 @@ app.post("/buy", async (req, res) => {
       timestamp,
     });
 
-    try {
-      const newBuy = new BuyModel({
-        amountboughtinfcoins: fcoinamount,
-        amountboughtinsc: scyouget,
-        usernameofbuyer: cusername,
-        usernameofsc: username,
-        userid: userId,
-        userpropic: userpropic,
-      });
+    const newBuy = new BuyModel({
+      amountboughtinfcoins: fcoinamount,
+      amountboughtinsc: scyouget,
+      usernameofbuyer: cusername,
+      usernameofsc: username,
+      userid: userId,
+      userpropic: userpropic,
+    });
 
-      await newBuy.save();
-    } catch (e) {
-      console.log(e);
-    }
+    await newBuy.save();
+
     res.status(200).json({ message: "Coins purchased successfully" });
   } catch (error) {
     console.log(error);
@@ -411,31 +412,40 @@ app.post("/buy", async (req, res) => {
   }
 });
 
+
 app.post("/sell", async (req, res) => {
   try {
-    const { scoinamount, fcyouget, cuserId, userId, cusername, username, userpropic } =
-      req.body;
-    // Update the user's data in the database
+    const {
+      scoinamount,
+      fcyouget,
+      cuserId,
+      userId,
+      cusername,
+      username,
+      userpropic,
+    } = req.body;
+
+    // Round down scoinamount and fcyouget to two decimal places
+
+    // Update the user's data in the database rounded down to two decimal places
     await UserModel.findByIdAndUpdate(
       userId,
       { $inc: { cfi: -fcyouget, ccm: -scoinamount } },
       { new: true }
     );
 
-    // Update the current logged-in user's balance in the database
+    // Update the current logged-in user's balance in the database rounded down to two decimal places
     await UserModel.findByIdAndUpdate(
       cuserId,
       { $inc: { balance: fcyouget } },
       { new: true }
     );
 
-    // Save price and timestamp information to the Graph collection
+    // Fetch the user's data from the database
     const user = await UserModel.findById(userId);
+
     // Calculate the price based on user's ccm
-    const price = (
-      (user.ccm + 1) * (user.ccm + 1) * 0.003 -
-      user.ccm * user.ccm * 0.003
-    ).toFixed(2);
+    const price = ((user.ccm + 1) * (user.ccm + 1) * 0.003 - user.ccm * user.ccm * 0.003);
     console.log("Printing Price", price);
     const timestamp = new Date();
     await GraphModel.create({
@@ -444,19 +454,16 @@ app.post("/sell", async (req, res) => {
       timestamp,
     });
 
-    try {
-      const newSell = new SellModel({
-        amountreceivedinfcoins: fcyouget,
-        amountsoldinsc: scoinamount,
-        usernameofsc: username,
-        usernameofseller: cusername,
-        userid: userId,
-        userpropic: userpropic,
-      });
-      await newSell.save();
-    } catch (e) {
-      console.log(e);
-    }
+    const newSell = new SellModel({
+      amountreceivedinfcoins: fcyouget,
+      amountsoldinsc: scoinamount,
+      usernameofsc: username,
+      usernameofseller: cusername,
+      userid: userId,
+      userpropic: userpropic,
+    });
+
+    await newSell.save();
 
     res.status(200).json({ message: "Coins sold successfully" });
   } catch (error) {
@@ -464,6 +471,7 @@ app.post("/sell", async (req, res) => {
     res.status(500).json({ error: "Error selling coins" });
   }
 });
+
 
 // Add a new endpoint to fetch graph data based on usernameofsc and convert timestamp to unix
 app.get("/specificgraphdatum/:username", async (req, res) => {
