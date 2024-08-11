@@ -1,7 +1,9 @@
 Home
 ![image](https://github.com/user-attachments/assets/1fd6a0e1-4f8a-4c1b-9889-09188ee3c86f)
+
 Profile
 ![image](https://github.com/user-attachments/assets/2c7326ca-829a-450d-89c7-9f1e1c65b53d)
+
 Portfolio
 ![image](https://github.com/user-attachments/assets/34da1156-00f0-4dd4-a103-e16041bf7dfa)
 
